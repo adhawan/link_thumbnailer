@@ -16,9 +16,11 @@ module LinkThumbnailer
       if self.url.is_a?(URI::HTTP)
         http                        = Net::HTTP::Persistent.new('linkthumbnailer')
         http.headers['User-Agent']  = LinkThumbnailer.configuration.user_agent
-        if !@cookie.blank?
+        
+        if defined? @cookie && !@cookie.blank?
           http.headers['Cookie'] = @cookie
         end
+        
         http.verify_mode            = OpenSSL::SSL::VERIFY_NONE unless LinkThumbnailer.configuration.verify_ssl
         http.open_timeout           = LinkThumbnailer.configuration.http_timeout
         resp                        = http.request(self.url)
@@ -26,7 +28,9 @@ module LinkThumbnailer
         when Net::HTTPSuccess     then resp.body
         when Net::HTTPRedirection
           location = resp['location'].start_with?('http') ? resp['location'] : "#{self.url.scheme}://#{self.url.host}#{resp['location']}"
-          @cookie = resp.response['set-cookie'].split('; ')[0]
+          
+          @cookie = resp.response['set-cookie'].split('; ')[0] if resp.response['set-cookie']
+
           fetch(location, redirect_count + 1)
         else resp.error!
         end
