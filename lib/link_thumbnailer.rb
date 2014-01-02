@@ -86,7 +86,7 @@ module LinkThumbnailer
       self.object[:title]       ||= doc.title if self.object[:title].nil?        
       self.object[:description] ||= doc.description if self.object[:description].nil?
       self.object[:url]         ||= doc.canonical_url || self.object[:url] if self.object[:url].nil?
-      self.object[:images]      = self.img_parser.parse(doc.img_abs_urls.dup) if self.object[:images].empty?
+      self.object[:images]      = self.img_parser.parse(doc.img_abs_urls.dup) if self.object[:images].nil?
 
       return self.object
     end
