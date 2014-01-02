@@ -53,7 +53,12 @@ module LinkThumbnailer
       doc = self.doc_parser.parse(self.fetcher.fetch(url), url)
 
       self.object[:url] = self.fetcher.url.to_s
-      opengraph(doc) || custom(doc)
+      
+      opengraph(doc)
+      custom(doc)
+      
+      return self.object if self.object.valid?
+      nil
     end
 
     private
@@ -74,8 +79,7 @@ module LinkThumbnailer
     def opengraph(doc)
       return nil unless opengraph?(doc)
       self.object = LinkThumbnailer::Opengraph.parse(self.object, doc)
-      return self.object if self.object.valid?
-      nil
+      return self.object
     end
 
     def custom(doc)
@@ -84,8 +88,7 @@ module LinkThumbnailer
       self.object[:url]         ||= doc.canonical_url || self.object[:url] if self.object[:url].nil?
       self.object[:images]      = self.img_parser.parse(doc.img_abs_urls.dup) if self.object[:images].empty?
 
-      return self.object if self.object.valid?
-      nil
+      return self.object
     end
 
     def opengraph?(doc)
