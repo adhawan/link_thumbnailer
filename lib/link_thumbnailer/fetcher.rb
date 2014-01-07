@@ -25,7 +25,14 @@ module LinkThumbnailer
         http.open_timeout           = LinkThumbnailer.configuration.http_timeout
         resp                        = http.request(self.url)
         case resp
-        when Net::HTTPSuccess     then resp.body
+        when Net::HTTPSuccess
+          if resp.header['Content-Encoding'].eql?('gzip')   
+            sio = StringIO.new( resp.body )
+            gz = Zlib::GzipReader.new( sio )
+            body = gz.read()      
+          else
+            resp.body
+          end
         when Net::HTTPRedirection
           location = resp['location'].start_with?('http') ? resp['location'] : "#{self.url.scheme}://#{self.url.host}#{resp['location']}"
           
